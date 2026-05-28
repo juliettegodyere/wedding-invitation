@@ -24,7 +24,23 @@ export async function POST(req: Request) {
 
     const { name, attending, additionalGuest, childrenCount, phone, note } =
       parsed.data;
-    const supabase = getSupabaseAdmin();
+    let supabase: ReturnType<typeof getSupabaseAdmin>;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (e) {
+      const msg =
+        e instanceof Error ? e.message : "Supabase is not configured.";
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            process.env.NODE_ENV === "production"
+              ? "Server is not configured."
+              : msg,
+        },
+        { status: 500 }
+      );
+    }
 
     const { error } = await supabase.from("rsvps").insert({
       name,
@@ -36,8 +52,16 @@ export async function POST(req: Request) {
     });
 
     if (error) {
+      // Helpful during local setup; avoid leaking details in production.
+      console.error("Supabase RSVP insert failed:", error);
       return NextResponse.json(
-        { ok: false, error: "Failed to save RSVP." },
+        {
+          ok: false,
+          error:
+            process.env.NODE_ENV === "production"
+              ? "Failed to save RSVP."
+              : `Failed to save RSVP: ${error.message}`,
+        },
         { status: 500 }
       );
     }
