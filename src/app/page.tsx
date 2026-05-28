@@ -142,15 +142,7 @@ export default function Home() {
                 Download invitation card
               </a>
               <p className="text-sm text-black/60">
-                RSVP before <span className="font-semibold">17th July</span>
-              </p>
-            </div>
-
-            <div className="mt-6 border-t border-black/10 pt-5">
-              <h2 className="text-lg font-semibold text-black/80">Our story</h2>
-              <p className="mt-2 text-black/70">
-                We can’t wait to celebrate with you. Please RSVP below so we can
-                plan accordingly.
+                RSVP before <span className="font-semibold">17th June</span>
               </p>
             </div>
           </div>

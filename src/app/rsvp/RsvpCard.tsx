@@ -6,6 +6,7 @@ import { z } from "zod";
 const RsvpSchema = z.object({
   name: z.string().trim().min(2, "Please enter your full name."),
   attending: z.boolean(),
+  additionalGuest: z.boolean(),
   childrenCount: z.number().int().min(0).max(12),
   phone: z
     .string()
@@ -28,7 +29,8 @@ type RsvpPayload = z.infer<typeof RsvpSchema>;
 export default function RsvpCard() {
   const [attending, setAttending] = useState<boolean | null>(null);
   const [name, setName] = useState("");
-  const [childrenCount, setChildrenCount] = useState(0);
+  const [additionalGuest, setAdditionalGuest] = useState<boolean>(false);
+  const [childrenCountText, setChildrenCountText] = useState<string>("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<
@@ -40,6 +42,20 @@ export default function RsvpCard() {
 
   const isReady = useMemo(() => attending !== null, [attending]);
 
+  function getChildrenCountNumber() {
+    if (!attending) return 0;
+    if (childrenCountText.trim() === "") return 0;
+    const n = Number(childrenCountText);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(12, Math.trunc(n)));
+  }
+
+  function bumpChildren(delta: -1 | 1) {
+    if (attending !== true) return;
+    const next = Math.max(0, Math.min(12, getChildrenCountNumber() + delta));
+    setChildrenCountText(String(next));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (attending === null) return;
@@ -49,7 +65,8 @@ export default function RsvpCard() {
     const payload: RsvpPayload = {
       name,
       attending,
-      childrenCount: attending ? childrenCount : 0,
+      additionalGuest: attending ? additionalGuest : false,
+      childrenCount: getChildrenCountNumber(),
       phone,
       note,
     };
@@ -92,8 +109,10 @@ export default function RsvpCard() {
       </h2>
       <p className="mt-2 text-black/70">
         Please select <span className="font-semibold">Yes</span> or{" "}
-        <span className="font-semibold">No</span>. (One adult per RSVP; add number
-        of children if attending with kids.)
+        <span className="font-semibold">No</span>. (Your invitation includes{" "}
+        <span className="font-semibold">1 adult</span>, with the option to bring{" "}
+        <span className="font-semibold">1 additional adult</span>. Add number of
+        children if attending with kids.)
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
@@ -117,7 +136,11 @@ export default function RsvpCard() {
               ? "border-brand bg-brand text-white focus:ring-brand/40"
               : "border-black/15 bg-white text-black/80 hover:bg-white/80 focus:ring-brand/30",
           ].join(" ")}
-          onClick={() => setAttending(false)}
+          onClick={() => {
+            setAttending(false);
+            setAdditionalGuest(false);
+            setChildrenCountText("");
+          }}
         >
           No, I can’t make it
         </button>
@@ -136,31 +159,80 @@ export default function RsvpCard() {
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2">
+          <div className="grid gap-2">
             <span className="text-sm font-semibold text-black/70">
-              Adult(s)
+              Additional guest
             </span>
-            <input
-              className="h-11 rounded-2xl border border-black/15 bg-black/3 px-4 text-black/70"
-              value="1"
-              readOnly
-              aria-readonly="true"
-            />
-          </label>
-          <label className="grid gap-2">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                disabled={attending !== true}
+                className={[
+                  "h-11 rounded-2xl border px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 disabled:opacity-60",
+                  additionalGuest === false
+                    ? "border-brand bg-brand text-white focus:ring-brand/40"
+                    : "border-black/15 bg-white text-black/80 hover:bg-white/80 focus:ring-brand/30",
+                ].join(" ")}
+                onClick={() => setAdditionalGuest(false)}
+              >
+                No
+              </button>
+              <button
+                type="button"
+                disabled={attending !== true}
+                className={[
+                  "h-11 rounded-2xl border px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 disabled:opacity-60",
+                  additionalGuest === true
+                    ? "border-brand bg-brand text-white focus:ring-brand/40"
+                    : "border-black/15 bg-white text-black/80 hover:bg-white/80 focus:ring-brand/30",
+                ].join(" ")}
+                onClick={() => setAdditionalGuest(true)}
+              >
+                Yes
+              </button>
+            </div>
+            <p className="text-xs font-semibold text-black/50">
+              Your invite includes 1 adult, with 1 additional guest (optional).
+            </p>
+          </div>
+
+          <div className="grid gap-2">
             <span className="text-sm font-semibold text-black/70">
               Children (number)
             </span>
-            <input
-              className="h-11 rounded-2xl border border-black/15 bg-white px-4 text-black/90 outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/20 disabled:bg-black/3 disabled:text-black/50"
-              type="number"
-              min={0}
-              max={12}
-              value={attending ? childrenCount : 0}
-              onChange={(e) => setChildrenCount(Number(e.target.value || 0))}
-              disabled={attending !== true}
-            />
-          </label>
+            <div className="flex items-stretch gap-2">
+              <button
+                type="button"
+                disabled={attending !== true}
+                className="w-12 rounded-2xl border border-black/15 bg-white text-xl font-semibold text-black/70 shadow-sm transition hover:bg-white/80 disabled:opacity-60"
+                onClick={() => bumpChildren(-1)}
+                aria-label="Decrease children"
+              >
+                −
+              </button>
+              <input
+                className="h-11 w-full rounded-2xl border border-black/15 bg-white px-4 text-black/90 outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/20 disabled:bg-black/3 disabled:text-black/50"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder={attending === true ? "0" : "—"}
+                value={attending === true ? childrenCountText : ""}
+                onChange={(e) => {
+                  const next = e.target.value.replace(/[^\d]/g, "");
+                  setChildrenCountText(next);
+                }}
+                disabled={attending !== true}
+              />
+              <button
+                type="button"
+                disabled={attending !== true}
+                className="w-12 rounded-2xl border border-black/15 bg-white text-xl font-semibold text-black/70 shadow-sm transition hover:bg-white/80 disabled:opacity-60"
+                onClick={() => bumpChildren(1)}
+                aria-label="Increase children"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
 
         <label className="grid gap-2">
