@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Wedding Invitation Site
+
+Simple wedding invitation site with RSVP tracking (Supabase) and calendar buttons.
+
+### Features
+
+- Landing page styled from your invitation card
+- RSVP: Yes/No
+- RSVP rules: **1 adult only**, and **number of children** if attending with kids
+- “Add to Calendar”
+  - Google Calendar link
+  - iCal download (iPhone)
+- Download invitation card link (local file by default, or configurable URL)
 
 ## Getting Started
 
@@ -6,19 +18,42 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` in the project root:
+
+```bash
+SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="YOUR_SERVICE_ROLE_KEY"
+
+# Optional: override the download link shown on the site.
+# If not set, the site uses /invitation-card.png.
+NEXT_PUBLIC_INVITATION_DOWNLOAD_URL=""
+```
+
+### Supabase table
+
+Create a table called `rsvps`:
+
+```sql
+create table if not exists public.rsvps (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null,
+  attending boolean not null,
+  adult_count int not null default 1,
+  children_count int not null default 0,
+  phone text null,
+  note text null
+);
+```
+
+> Note: this app writes RSVPs from a server route using the **service role key**.
+> Keep it in server-only env vars (Vercel project settings), never expose it to the client.
 
 ## Learn More
 

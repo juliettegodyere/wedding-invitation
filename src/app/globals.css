@@ -3,13 +3,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand: #c2185b;
+  --accent: #5a8f3d;
+  --brand-soft: #f7e3ea;
+  --accent-soft: #eaf3e5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: var(--brand);
+  --color-accent: var(--accent);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-body);
+  --font-title: var(--font-title);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +30,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), ui-serif, Georgia, Cambria, "Times New Roman",
+    Times, serif;
 }
