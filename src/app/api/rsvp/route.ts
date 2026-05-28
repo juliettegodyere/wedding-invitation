@@ -8,7 +8,6 @@ const RsvpSchema = z.object({
   additionalGuest: z.boolean(),
   childrenCount: z.number().int().min(0).max(12),
   phone: z.string().trim().max(64).optional(),
-  note: z.string().trim().max(500).optional(),
 });
 
 export async function POST(req: Request) {
@@ -22,8 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, attending, additionalGuest, childrenCount, phone, note } =
-      parsed.data;
+    const { name, attending, additionalGuest, childrenCount, phone } = parsed.data;
     let supabase: ReturnType<typeof getSupabaseAdmin>;
     try {
       supabase = getSupabaseAdmin();
@@ -48,7 +46,6 @@ export async function POST(req: Request) {
       children_count: attending ? childrenCount : 0,
       adult_count: attending ? (additionalGuest ? 2 : 1) : 1,
       phone: phone || null,
-      note: note || null,
     });
 
     if (error) {

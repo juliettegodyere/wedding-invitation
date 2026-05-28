@@ -15,13 +15,6 @@ const RsvpSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((v) => (v ? v : undefined)),
-  note: z
-    .string()
-    .trim()
-    .max(500)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v ? v : undefined)),
 });
 
 type RsvpPayload = z.infer<typeof RsvpSchema>;
@@ -32,7 +25,6 @@ export default function RsvpCard() {
   const [additionalGuest, setAdditionalGuest] = useState<boolean>(false);
   const [childrenCountText, setChildrenCountText] = useState<string>("");
   const [phone, setPhone] = useState("");
-  const [note, setNote] = useState("");
   const [status, setStatus] = useState<
     | { kind: "idle" }
     | { kind: "submitting" }
@@ -68,7 +60,6 @@ export default function RsvpCard() {
       additionalGuest: attending ? additionalGuest : false,
       childrenCount: getChildrenCountNumber(),
       phone,
-      note,
     };
 
     const parsed = RsvpSchema.safeParse(payload);
@@ -244,18 +235,6 @@ export default function RsvpCard() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="e.g. +44 7789 594045"
-          />
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-black/70">
-            Note (optional)
-          </span>
-          <textarea
-            className="min-h-24 resize-none rounded-2xl border border-black/15 bg-white px-4 py-3 text-black/90 outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/20"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Dietary requirements, accessibility needs, etc."
           />
         </label>
 
